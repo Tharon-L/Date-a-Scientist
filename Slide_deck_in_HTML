@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dating Profile Analyzer - ML Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+        
+        .presentation-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .slide {
+            display: none;
+            padding: 60px;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: slideIn 0.6s ease-in-out;
+        }
+        
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .slide h1 {
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .slide h2 {
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .slide h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd93d;
+        }
+        
+        .slide p, .slide li {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            max-width: 900px;
+            text-align: left;
+        }
+        
+        .slide ul {
+            text-align: left;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .slide li {
+            margin-bottom: 12px;
+            padding-left: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #fff;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .architecture-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-step {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #4ecdc4;
+        }
+        
+        .flow-step:last-child::after {
+            display: none;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            margin: 20px 0;
+            border-left: 4px solid #4ecdc4;
+            overflow-x: auto;
+        }
+        
+        .emoji {
+            font-size: 1.5em;
+            margin: 0 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+            }
+            
+            .slide h1 {
+                font-size: 2.5rem;
+            }
+            
+            .slide h2 {
+                font-size: 2rem;
+            }
+            
+            .slide p, .slide li {
+                font-size: 1.1rem;
+            }
+            
+            .stats-grid, .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .architecture-flow {
+                flex-direction: column;
+            }
+            
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                top: -15px;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">12</span>
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1>Dating Profile Analyzer</h1>
+            <h3>Machine Learning for Digital Romance <span class="emoji">💕</span></h3>
+            <p style="text-align: center; font-size: 1.5rem; margin-top: 40px;">
+                Predicting Attractiveness & Compatibility Through Data Science
+            </p>
+            <div class="stats-grid" style="margin-top: 50px;">
+                <div class="stat-card">
+                    <div class="stat-number">59K+</div>
+                    <div class="stat-label">Dating Profiles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">31</div>
+                    <div class="stat-label">Original Features</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">18</div>
+                    <div class="stat-label">Engineered Features</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem Statement -->
+        <div class="slide">
+            <h2>The Challenge <span class="emoji">🎯</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Profile Optimization</h3>
+                    <p>Complete profiles show 25% higher attractiveness ratings</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="font-size: 2rem;">🎯</div>
+                    <h3>Age Compatibility</h3>
+                    <p>10-year age gap is the sweet spot for successful matches</p>
+                </div>
+            </div>
+            <ul style="margin-top: 30px;">
+                <li><strong>Profile Optimization:</strong> Focus on essay quality and completeness first</li>
+                <li><strong>Engagement Strategy:</strong> Use positive language and interactive elements</li>
+                <li><strong>Matching Algorithm:</strong> Weight age and lifestyle compatibility heavily</li>
+                <li><strong>Platform Design:</strong> Encourage profile completion through gamification</li>
+            </ul>
+        </div>
+
+        <!-- Slide 10: Business Applications -->
+        <div class="slide">
+            <h2>Business Applications <span class="emoji">💼</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Dating Platforms</h3>
+                    <ul>
+                        <li>Improved matching algorithms</li>
+                        <li>Profile optimization suggestions</li>
+                        <li>User engagement enhancement</li>
+                        <li>Success rate improvement</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Marketing & Advertising</h3>
+                    <ul>
+                        <li>Demographic targeting</li>
+                        <li>Content personalization</li>
+                        <li>Message optimization</li>
+                        <li>Engagement prediction</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔬</div>
+                    <h3>Research Applications</h3>
+                    <ul>
+                        <li>Social psychology studies</li>
+                        <li>Behavioral analysis</li>
+                        <li>NLP research</li>
+                        <li>Recommendation systems</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Product Development</h3>
+                    <ul>
+                        <li>Feature prioritization</li>
+                        <li>User experience optimization</li>
+                        <li>A/B testing frameworks</li>
+                        <li>Success metrics definition</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Future Enhancements -->
+        <div class="slide">
+            <h2>Future Roadmap <span class="emoji">🚀</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Advanced AI Models</h3>
+                    <ul>
+                        <li>Deep learning for text analysis</li>
+                        <li>Computer vision for photos</li>
+                        <li>Transformer models (BERT/GPT)</li>
+                        <li>Multi-modal learning</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Systems</h3>
+                    <ul>
+                        <li>Live recommendation API</li>
+                        <li>Streaming data processing</li>
+                        <li>Real-time model updates</li>
+                        <li>Dynamic compatibility scoring</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Advanced Analytics</h3>
+                    <ul>
+                        <li>Model interpretability (SHAP)</li>
+                        <li>Bias detection & mitigation</li>
+                        <li>Fairness in matching</li>
+                        <li>Demographic analysis</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Platform Integration</h3>
+                    <ul>
+                        <li>REST API development</li>
+                        <li>Cloud deployment (AWS/GCP)</li>
+                        <li>Docker containerization</li>
+                        <li>Microservices architecture</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Conclusion -->
+        <div class="slide">
+            <h2>Key Takeaways <span class="emoji">🎯</span></h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">✨</div>
+                    <div class="stat-label"><strong>Data-Driven Romance</strong><br>Successfully quantified subjective concepts like attractiveness</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">🔮</div>
+                    <div class="stat-label"><strong>Predictive Matching</strong><br>Built robust models for compatibility prediction</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">📈</div>
+                    <div class="stat-label"><strong>Actionable Insights</strong><br>Provided concrete recommendations for profile optimization</div>
+                </div>
+            </div>
+            <div style="margin-top: 40px; text-align: center;">
+                <h3 style="color: #4ecdc4; margin-bottom: 20px;">Project Impact</h3>
+                <ul style="display: inline-block; text-align: left; max-width: 600px;">
+                    <li>Demonstrated ML application in social contexts</li>
+                    <li>Combined NLP with traditional ML techniques</li>
+                    <li>Created scalable, memory-efficient pipeline</li>
+                    <li>Provided business value through insights</li>
+                    <li>Established foundation for future enhancements</li>
+                </ul>
+            </div>
+            <div style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px; backdrop-filter: blur(10px);">
+                <h3 style="color: #ffd93d;">Thank you for your attention!</h3>
+                <p style="text-align: center; font-size: 1.2rem; margin-top: 15px;">
+                    Questions & Discussion <span class="emoji">❓</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="previousSlide()">← Previous</button>
+            <button class="btn" onclick="nextSlide()">Next →</button>
+            <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            document.getElementById('current-slide').textContent = index + 1;
+        }
+        
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+        
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    previousSlide();
+                    break;
+                case 'Escape':
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    }
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+            }
+        });
+        
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchEndX - touchStartX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    previousSlide();
+                } else {
+                    nextSlide();
+                }
+            }
+        }
+        
+        // Auto-advance demo (optional)
+        let autoAdvance = false;
+        let autoAdvanceInterval;
+        
+        function startAutoAdvance() {
+            if (!autoAdvance) {
+                autoAdvance = true;
+                autoAdvanceInterval = setInterval(nextSlide, 10000); // 10 seconds
+            }
+        }
+        
+        function stopAutoAdvance() {
+            if (autoAdvance) {
+                autoAdvance = false;
+                clearInterval(autoAdvanceInterval);
+            }
+        }
+        
+        // Stop auto-advance on user interaction
+        document.addEventListener('click', stopAutoAdvance);
+        document.addEventListener('keydown', stopAutoAdvance);
+        document.addEventListener('touchstart', stopAutoAdvance);
+        
+        // Initialize
+        showSlide(0);
+        
+        // Optional: Start auto-advance after 30 seconds of inactivity
+        // setTimeout(startAutoAdvance, 30000);
+    </script>
+</body>
+</html>>How can users create more attractive dating profiles?</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💘</div>
+                    <h3>Compatibility Matching</h3>
+                    <p>What factors predict successful matches between users?</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Data-Driven Insights</h3>
+                    <p>Can we quantify attractiveness and compatibility?</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Platform Enhancement</h3>
+                    <p>How can dating platforms improve user experience?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Dataset Overview -->
+        <div class="slide">
+            <h2>Dataset Deep Dive <span class="emoji">📈</span></h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">59,946</div>
+                    <div class="stat-label">Total Profiles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">30%</div>
+                    <div class="stat-label">High Attractiveness</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2,000</div>
+                    <div class="stat-label">User Pairs Generated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">31%</div>
+                    <div class="stat-label">Compatibility Rate</div>
+                </div>
+            </div>
+            <ul style="margin-top: 30px;">
+                <li><strong>Demographics:</strong> Age, location, body type, education</li>
+                <li><strong>Lifestyle:</strong> Diet, drinking, smoking, drug use preferences</li>
+                <li><strong>Essays:</strong> Multiple text fields describing personality and interests</li>
+                <li><strong>Preferences:</strong> What users are looking for in matches</li>
+            </ul>
+        </div>
+
+        <!-- Slide 4: Feature Engineering -->
+        <div class="slide">
+            <h2>Advanced Feature Engineering <span class="emoji">⚙️</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Text Analysis</h3>
+                    <ul>
+                        <li>Essay length & word count</li>
+                        <li>Sentiment analysis (VADER)</li>
+                        <li>Reading complexity scores</li>
+                        <li>Vocabulary richness</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <h3>Personality Indicators</h3>
+                    <ul>
+                        <li>Exclamation mark usage</li>
+                        <li>Question frequency</li>
+                        <li>Emoji count</li>
+                        <li>Engagement patterns</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Profile Quality</h3>
+                    <ul>
+                        <li>Completeness score</li>
+                        <li>Lifestyle consistency</li>
+                        <li>Information depth</li>
+                        <li>Response rates</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Demographic Features</h3>
+                    <ul>
+                        <li>Age group categorization</li>
+                        <li>Geographic clustering</li>
+                        <li>Education mapping</li>
+                        <li>Lifestyle groupings</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Attractiveness Model -->
+        <div class="slide">
+            <h2>Attractiveness Prediction Model <span class="emoji">⭐</span></h2>
+            <h3>Composite Scoring Approach</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">35%</div>
+                    <div class="stat-label">Essay Quality Weight</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">25%</div>
+                    <div class="stat-label">Profile Completeness</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">20%</div>
+                    <div class="stat-label">User Engagement</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">20%</div>
+                    <div class="stat-label">Lifestyle Consistency</div>
+                </div>
+            </div>
+            <div class="code-block">
+                <strong>Random Forest Classifier</strong><br>
+                • 500 TF-IDF text features<br>
+                • Categorical & numerical variables<br>
+                • Grid search hyperparameter optimization<br>
+                • ROC-AUC maximization with 3-fold CV
+            </div>
+        </div>
+
+        <!-- Slide 6: Compatibility Model -->
+        <div class="slide">
+            <h2>Compatibility Matching System <span class="emoji">💕</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎂</div>
+                    <h3>Age Compatibility</h3>
+                    <p>Users within 10 years show significantly higher compatibility rates</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌟</div>
+                    <h3>Attractiveness Balance</h3>
+                    <p>Similar attractiveness scores predict successful matches</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <h3>Shared Characteristics</h3>
+                    <p>Common lifestyle choices and preferences improve compatibility</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💖</div>
+                    <h3>Orientation Matching</h3>
+                    <p>Critical factor for meaningful connections</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.2rem;">
+                <span class="highlight">Multi-model comparison:</span> Random Forest, Gradient Boosting, Logistic Regression
+            </p>
+        </div>
+
+        <!-- Slide 7: Technical Architecture -->
+        <div class="slide">
+            <h2>Technical Architecture <span class="emoji">🏗️</span></h2>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <h3>Data Ingestion</h3>
+                    <p>CSV Loading<br>Missing Value Analysis</p>
+                </div>
+                <div class="flow-step">
+                    <h3>Feature Engineering</h3>
+                    <p>NLP Processing<br>Text Analysis</p>
+                </div>
+                <div class="flow-step">
+                    <h3>Model Training</h3>
+                    <p>Ensemble Methods<br>Hyperparameter Tuning</p>
+                </div>
+                <div class="flow-step">
+                    <h3>Prediction</h3>
+                    <p>Attractiveness<br>Compatibility</p>
+                </div>
+                <div class="flow-step">
+                    <h3>Insights</h3>
+                    <p>Visualizations<br>Recommendations</p>
+                </div>
+            </div>
+            <div class="code-block" style="margin-top: 30px;">
+                <strong>Memory Optimization Techniques:</strong><br>
+                • Limited TF-IDF features (500 max)<br>
+                • Stratified sampling for pair generation<br>
+                • Single-threaded processing<br>
+                • Chunked data processing
+            </div>
+        </div>
+
+        <!-- Slide 8: Model Performance -->
+        <div class="slide">
+            <h2>Model Performance Results <span class="emoji">📊</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Attractiveness Model</h3>
+                    <ul>
+                        <li><strong>Algorithm:</strong> Random Forest</li>
+                        <li><strong>Optimization:</strong> ROC-AUC</li>
+                        <li><strong>Cross-validation:</strong> 3-fold</li>
+                        <li><strong>Features:</strong> 500+ combined</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💘</div>
+                    <h3>Compatibility Model</h3>
+                    <ul>
+                        <li><strong>Algorithm:</strong> Best of 3 models</li>
+                        <li><strong>Optimization:</strong> F1-score</li>
+                        <li><strong>Evaluation:</strong> Stratified sampling</li>
+                        <li><strong>Features:</strong> Relationship-focused</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.3rem;">
+                <span class="highlight">Key Achievement:</span> Successfully identified patterns in digital dating behavior with actionable insights for profile optimization
+            </p>
+        </div>
+
+        <!-- Slide 9: Key Insights -->
+        <div class="slide">
+            <h2>Key Insights & Findings <span class="emoji">💡</span></h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="font-size: 2rem;">📝</div>
+                    <h3>Essay Quality Matters</h3>
+                    <p>Longer, well-written essays significantly increase attractiveness scores</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="font-size: 2rem;">😊</div>
+                    <h3>Positive Sentiment Wins</h3>
+                    <p>Profiles with positive sentiment and engaging language perform better</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="font-size: 2rem;">📊</div>
+                    <h3>Completeness is Key</h3>
+                    <p
